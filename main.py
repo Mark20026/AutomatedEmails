@@ -1,33 +1,29 @@
-import requests
-from newsapi import NewsApiClient
-from pprint import pprint
+import yagmail
+from news import NewsFeed
+import pandas
+import datetime
+import time
 
 
-class NewsFeed:
+while True:
+    if datetime.datetime.now().hour == 20 and datetime.datetime.now().minute == 49:
+        df = pandas.read_csv("people.csv")
 
-    def __init__(self, interest, language, from_param, to_param):
-        self.newsapi = NewsApiClient(api_key='d10d0741ce434ed2a1040cf447b1d41d')
-        self.interest = interest
-        self.language = language
-        self.from_param = from_param
-        self.to_param = to_param
+        for index, row in df.iterrows():
+            today = datetime.datetime.now().strftime("%Y-%m-%d")
+            yesterday = (datetime.datetime.now() - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+            news_feed = NewsFeed(interest=row["interest"],
+                                 from_param=yesterday,
+                                 to_param=today)
 
-    def get(self):
-        headlines = self.newsapi.get_everything(qintitle=self.interest,
-                                                from_param=self.from_param,
-                                                to=self.to_param,
-                                                language=self.language)
+            # Type your email and app password here
+            sender = yagmail.SMTP(user="youremail@gmail.com",
+                                  password="yourpassword")
 
-        articles = headlines["articles"]
-        email_body = ""
+            sender.send(to=row["email"],
+                        subject=f"Your {row['interest']} news for today!",
+                        contents=f"Hi {row['name']} \n"
+                                 f" See what is on about {row['interest']} today!\n"
+                                 f"{news_feed.get()}")
 
-        for article in articles:
-            email_body = email_body + article["title"] + "\n" + article["url"] + "\n\n"
-
-        return email_body
-
-
-news_file = NewsFeed("gym", "en", "2023-09-02", "2023-09-04")
-results = news_file.get()
-print(results)
-
+    time.sleep(60)
