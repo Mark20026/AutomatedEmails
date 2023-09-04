@@ -11,10 +11,7 @@ class NewsFeed:
         self.to_param = to_param
 
     def get(self):
-        headlines = self.newsapi.get_everything(qintitle=self.interest,
-                                                from_param=self.from_param,
-                                                to=self.to_param,
-                                                language=self.language)
+        headlines = self._get_headlines()
 
         articles = headlines["articles"]
         email_body = ""
@@ -23,6 +20,13 @@ class NewsFeed:
             email_body = email_body + article["title"] + "\n" + article["url"] + "\n\n"
 
         return email_body
+
+    def _get_headlines(self):
+        headlines = self.newsapi.get_everything(qintitle=self.interest,
+                                                from_param=self.from_param,
+                                                to=self.to_param,
+                                                language=self.language)
+        return headlines
 
 
 if __name__ == "__main__":
